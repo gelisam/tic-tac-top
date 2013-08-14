@@ -106,6 +106,20 @@ play (x, y) (GameState minRow  player  board) =
     player' = not player
     board'  = set_at (x, y) (Just player) board
 
+-- -- all game states, endgames first
+-- game_states :: [GameState]
+-- game_states = [... | ] n <- [9,8..0]]
+
+
+-- -- survive the longest.
+-- -- win if possible, but delay the victory;
+-- -- if you must lose, survive as long as possible.
+-- -- 
+-- -- return the best move, the eventual winner,
+-- -- and the number of surviving steps.
+-- best_move :: GameState -> (Move, Winner, Int)
+-- best_move g = maximumBy (compare `on` value) outcome . legal_moves g
+
 
 -- main = do b <- readBoard <$> getContents
 --           print $ printCell $ winner b
