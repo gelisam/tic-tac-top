@@ -2,13 +2,19 @@ module Main where
 
 import Control.Applicative
 import Control.Monad
+import Data.Function
 import Data.List
+import Data.Maybe
+
+
+bools :: [Bool]
+bools = [True, False]
 
 
 type Player = Bool
 
 players :: [Player]
-players = [True, False]
+players = bools
 
 
 type Cell = Maybe Player
@@ -21,6 +27,42 @@ type Board = [[Cell]]
 
 boards :: [Board]
 boards = (replicateM 3 . replicateM 3) cells
+
+-- crowded boards first
+boards' :: [Board]
+boards' = sortBy (compare `on` measures) boards
+  where
+    measures xs = (count xs, pattern xs, player_string xs)
+    count = negate . length . filter isJust . concat
+    pattern = map not . map isJust . concat
+    player_string = map not . map fromJust . filter isJust . concat
+
+-- crowded boards first
+boards'' :: [Board]
+boards'' = [split3 cells | n <- [9,8..0]
+                         , pattern <- 9 `choose` n
+                         , xs <- replicateM n players
+                         , let player_string = map Just xs
+                         , let blank_string = repeat Nothing
+                         , let cells = knit pattern player_string
+                                                    blank_string
+                         ]
+  where
+    split3 (a:b:c:d:e:f:g:h:i:[]) = [[a,b,c],[d,e,f],[g,h,i]]
+    
+    -- knit two strings together into a single strand,
+    -- according to the pattern.
+    knit :: [Bool] -> [a] -> [a] -> [a]
+    knit []         _      _      = []
+    knit (True :ps) (t:ts) fs     = t : knit ps ts fs
+    knit (False:ps) ts     (f:fs) = f : knit ps ts fs
+    
+    -- n booleans, k of which are true.
+    choose :: Int -> Int -> [[Bool]]
+    choose n k | k == 0 = [replicate n False]
+    choose n k | k == n = [replicate n True]
+    choose n k | otherwise = [x:xs | x <- bools
+                                   , xs <- (n-1) `choose` if x then k-1 else k]
 
 
 readPlayer :: Char -> Player
@@ -119,9 +161,9 @@ play (x, y) (GameState minRow  player  board) =
     player' = not player
     board'  = set_at (x, y) (Just player) board
 
--- -- all game states, endgames first
+-- all game states, endgames first
 -- game_states :: [GameState]
--- game_states = [... | ] n <- [9,8..0]]
+-- game_states = [GameState 0 True | n <- [9,8..0], g <- ]
 
 
 -- -- survive the longest.
@@ -136,4 +178,5 @@ play (x, y) (GameState minRow  player  board) =
 
 -- main = do b <- readBoard <$> getContents
 --           print $ printCell $ winner b
-main = putStrLn "typechecks."
+main = do print (sort boards == sort boards') -- True
+          print (boards' == boards'')         -- True
