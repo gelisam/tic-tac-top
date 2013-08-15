@@ -29,7 +29,7 @@ type Board = [[Cell]]
 -- crowded boards first
 boards :: [Board]
 boards = [split3 cells | n <- [9,8..0]
-                       , pattern <- 9 `choose` n
+                       , pattern <- patterns 9 n
                        , xs <- replicateM n players
                        , let player_string = map Just xs
                        , let blank_string = repeat Nothing
@@ -45,13 +45,22 @@ boards = [split3 cells | n <- [9,8..0]
     knit []         _      _      = []
     knit (True :ps) (t:ts) fs     = t : knit ps ts fs
     knit (False:ps) ts     (f:fs) = f : knit ps ts fs
-    
-    -- n booleans, k of which are true.
-    choose :: Int -> Int -> [[Bool]]
-    choose n k | k == 0 = [replicate n False]
-    choose n k | k == n = [replicate n True]
-    choose n k | otherwise = [x:xs | x <- bools
-                                   , xs <- (n-1) `choose` if x then k-1 else k]
+
+-- n booleans, k of which are true.
+patterns :: Int -> Int -> [[Bool]]
+patterns n k | k == 0 = [replicate n False]
+patterns n k | k == n = [replicate n True]
+patterns n k | otherwise = [x:xs | x <- bools
+                                 , xs <- (n-1) `patterns` if x then k-1 else k]
+
+patterns_with :: Int -> Int -> Int
+patterns_with n k = n `choose` k
+  where
+    -- http://stackoverflow.com/questions/6806946/built-in-factorial-function-in-haskell
+    choose :: Int -> Int -> Int
+    choose n 0 = 1
+    choose 0 k = 0
+    choose n k = choose (n-1) (k-1) * n `div` k 
 
 -- -- boards !! boardIndex b == b
 -- boardIndex :: Board -> (Int, Int, Int)
@@ -80,12 +89,6 @@ boards = [split3 cells | n <- [9,8..0]
 --     count_offset = sum $ take count_number count_sizes
 --     
 --     pattern_offset = (2 ^ count) * pattern_number
---     
---     -- http://stackoverflow.com/questions/6806946/built-in-factorial-function-in-haskell
---     choose :: Int -> Int -> Int
---     choose n 0 = 1
---     choose 0 k = 0
---     choose n k = choose (n-1) (k-1) * n `div` k 
 
 
 readPlayer :: Char -> Player
@@ -202,7 +205,8 @@ game_states = [GameState minRow player board | board <- boards
 -- best_move g = maximumBy (compare `on` value) outcome . legal_moves g
 
 
-main = putStrLn "typechecks."
+-- main = putStrLn "typechecks."
 -- main = do b <- readBoard <$> getContents
 --           print $ printCell $ winner b
 -- main = print $ and [boards !! boardIndex b == b | b <- boards]
+main = print $ and [length (patterns 9 k) == patterns_with 9 k | k <- [0..9]]  -- True
