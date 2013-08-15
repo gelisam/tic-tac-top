@@ -5,7 +5,7 @@ test: src/Main.exe
 	./$<
 
 src/Main.exe: src/Main.hs
-	ghc --make $<
+	ghc --make $< -o "$@"
 
 
 clean:
