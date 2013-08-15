@@ -2,6 +2,7 @@ module Main where
 
 import Control.Applicative
 import Control.Monad
+import Data.Bits
 import Data.Function
 import Data.List
 import Data.Maybe
@@ -25,28 +26,16 @@ cells = Nothing : map Just players
 
 type Board = [[Cell]]
 
+-- crowded boards first
 boards :: [Board]
-boards = (replicateM 3 . replicateM 3) cells
-
--- crowded boards first
-boards' :: [Board]
-boards' = sortBy (compare `on` measures) boards
-  where
-    measures xs = (count xs, pattern xs, player_string xs)
-    count = negate . length . filter isJust . concat
-    pattern = map not . map isJust . concat
-    player_string = map not . map fromJust . filter isJust . concat
-
--- crowded boards first
-boards'' :: [Board]
-boards'' = [split3 cells | n <- [9,8..0]
-                         , pattern <- 9 `choose` n
-                         , xs <- replicateM n players
-                         , let player_string = map Just xs
-                         , let blank_string = repeat Nothing
-                         , let cells = knit pattern player_string
-                                                    blank_string
-                         ]
+boards = [split3 cells | n <- [9,8..0]
+                       , pattern <- 9 `choose` n
+                       , xs <- replicateM n players
+                       , let player_string = map Just xs
+                       , let blank_string = repeat Nothing
+                       , let cells = knit pattern player_string
+                                                  blank_string
+                       ]
   where
     split3 (a:b:c:d:e:f:g:h:i:[]) = [[a,b,c],[d,e,f],[g,h,i]]
     
@@ -63,6 +52,40 @@ boards'' = [split3 cells | n <- [9,8..0]
     choose n k | k == n = [replicate n True]
     choose n k | otherwise = [x:xs | x <- bools
                                    , xs <- (n-1) `choose` if x then k-1 else k]
+
+-- -- boards !! boardIndex b == b
+-- boardIndex :: Board -> (Int, Int, Int)
+-- boardIndex xss = (count_offset, pattern_number, player_number)
+--   where
+--     xs = concat xss
+--     count = length . filter isJust $ xs
+--     pattern = map isJust $ xs
+--     player_string = map fromJust . filter isJust $ xs
+--     
+--     count_number = 9 - count
+--     pattern_number = fromBools pattern
+--     player_number = fromBools player_string
+--     
+--     -- most-significant first, beginning with True
+--     fromBools :: [Bool] -> Int
+--     fromBools = fromBits . reverse . map not
+--     
+--     -- least-significant first, beginning with False
+--     fromBits :: [Bool] -> Int
+--     fromBits [] = 0
+--     fromBits (x:xs) = fromBit x + 2 * fromBits xs
+--     fromBit x = if x then 1 else 0
+--     
+--     count_sizes = [(2 ^ k) * (9 `choose` k) | k <- [9,8..0]]
+--     count_offset = sum $ take count_number count_sizes
+--     
+--     pattern_offset = (2 ^ count) * pattern_number
+--     
+--     -- http://stackoverflow.com/questions/6806946/built-in-factorial-function-in-haskell
+--     choose :: Int -> Int -> Int
+--     choose n 0 = 1
+--     choose 0 k = 0
+--     choose n k = choose (n-1) (k-1) * n `div` k 
 
 
 readPlayer :: Char -> Player
@@ -161,9 +184,12 @@ play (x, y) (GameState minRow  player  board) =
     player' = not player
     board'  = set_at (x, y) (Just player) board
 
--- all game states, endgames first
--- game_states :: [GameState]
--- game_states = [GameState 0 True | n <- [9,8..0], g <- ]
+-- all game states, crowded boards first
+game_states :: [GameState]
+game_states = [GameState minRow player board | board <- boards
+                                             , minRow <- [0..2]
+                                             , player <- players
+                                             ]
 
 
 -- -- survive the longest.
@@ -176,7 +202,7 @@ play (x, y) (GameState minRow  player  board) =
 -- best_move g = maximumBy (compare `on` value) outcome . legal_moves g
 
 
+main = putStrLn "typechecks."
 -- main = do b <- readBoard <$> getContents
 --           print $ printCell $ winner b
-main = do print (sort boards == sort boards') -- True
-          print (boards' == boards'')         -- True
+-- main = print $ and [boards !! boardIndex b == b | b <- boards]
