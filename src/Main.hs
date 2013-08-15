@@ -6,8 +6,21 @@ import Data.List
 
 
 type Player = Bool
+
+players :: [Player]
+players = [True, False]
+
+
 type Cell = Maybe Player
+
+cells :: [Cell]
+cells = Nothing : map Just players
+
+
 type Board = [[Cell]]
+
+boards :: [Board]
+boards = (replicateM 3 . replicateM 3) cells
 
 
 readPlayer :: Char -> Player
