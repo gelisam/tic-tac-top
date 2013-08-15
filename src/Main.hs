@@ -4,6 +4,7 @@ import Control.Applicative
 import Control.Monad
 import Data.Bits
 import Data.Function
+import qualified Data.Ix as I
 import Data.List
 import Data.Maybe
 
@@ -61,6 +62,23 @@ patterns_with n k = n `choose` k
     choose n 0 = 1
     choose 0 k = 0
     choose n k = choose (n-1) (k-1) * n `div` k 
+
+data BoardIx = BoardIx { runBoardIx :: Board }
+               deriving Eq
+
+instance Ord BoardIx where
+instance I.Ix BoardIx where
+
+-- boards_with_crowd :: Int -> Int
+-- boards_with_crowd k = boards_with_slots k * (9 `choose` k)
+-- 
+-- -- k available slots for non-empty cells
+-- boards_with_slots :: Int -> Int
+-- boards_with_slots k = 2 ^ k
+-- 
+-- -- True for non-empty cells
+-- boards_with_pattern :: [Bool] -> Int
+-- boards_with_pattern = boards_with_slots . length . filter id
 
 -- -- boards !! boardIndex b == b
 -- boardIndex :: Board -> (Int, Int, Int)
