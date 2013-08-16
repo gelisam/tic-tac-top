@@ -109,4 +109,4 @@ The game isn't installed anywhere, `make` will compile it inside the current fol
 
     You could win in 3 moves.
 
-Notice it says you *could*. Will you?
+Indeed, you *could* win in three moves. Will you?
