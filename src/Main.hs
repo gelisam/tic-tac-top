@@ -7,6 +7,7 @@ import Data.Array
 import Data.Function
 import Data.Ix
 import Data.List
+import Data.Maybe
 import Text.Printf
 import System.Exit
 import System.IO
@@ -162,13 +163,17 @@ user_to_play g = do when (winner == Just False && moves_left > 1) $ do
                       Just m -> do putStrLn ""
                                    next_turn $ play g m
   where
+    b = board g
     (_, winner, moves_left) = best_move g
     
     full_choice_grid = ["123","456","789"]
     choice_grid = (map.map) dot_if_invalid full_choice_grid
-    dot_if_invalid c = if valid_choice c then c else '.'
+    dot_if_invalid c = if valid_choice c then c
+                                         else cell_at c
     valid_choice k = k `elem` map fst choices
     choices = [(full_choice_grid `at` m, m) | m <- legal_moves g]
+    cell_at = printCell . fromJust . flip lookup cell_map
+    cell_map = [(full_choice_grid `at` m, b `at` m) | m <- positions]
 
 main = do let b = indexed_board (fst board_range)
               g = GameState 0 True b
