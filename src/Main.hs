@@ -2,6 +2,7 @@ module Main where
 
 import Control.Applicative
 import Control.Monad
+import Control.Concurrent
 import Data.Array
 import Data.Function
 import Data.Ix
@@ -108,16 +109,20 @@ best_move g = case winner $ board g of
     cur_player = player g
 
 
+printd :: String -> IO ()
+printd s = do threadDelay 500000
+              putStrLn s
+
 inspect_game :: GameState -> IO ()
 inspect_game g = do putStrLn $ printBoard b
                     case winner b of
                       Nothing    -> return ()
-                      Just True  -> do putStrLn "The computer wins."
+                      Just True  -> do printd "The computer wins."
                                        exitSuccess
-                      Just False -> do putStrLn "You win!"
+                      Just False -> do printd "You win!"
                                        exitSuccess
                     when (tie g) $ do
-                      putStrLn "It's a tie."
+                      printd "It's a tie."
                       exitSuccess
   where
     b = board g
@@ -130,28 +135,29 @@ next_turn g = do inspect_game g
 
 ai_to_play :: GameState -> IO ()
 ai_to_play g = do when (winner == Just True && moves_left > 1) $ do
-                    printf "I think I can win in %d moves.\n\n" (moves_left `quot` 2)
+                    printd $ printf "I think I can win in %d moves.\n" (moves_left `quot` 2)
                   when (winner == Just False && moves_left == 2) $ do
-                    printf "Clever trap!\n\n"
+                    printd $ printf "Clever trap!\n"
                   when (winner == Just False && moves_left == 1) $ do
-                    printf "You tricked me!\n\n"
+                    printd $ printf "You tricked me!\n"
+                  threadDelay 500000
                   next_turn $ play g m
   where
     (m, winner, moves_left) = best_move g
 
 user_to_play :: GameState -> IO ()
 user_to_play g = do when (winner == Just False && moves_left > 1) $ do
-                      printf "You could win in %d moves.\n\n" (moves_left `quot` 2)
+                      printd $ printf "You could win in %d moves.\n" (moves_left `quot` 2)
                     when (winner == Just True && moves_left == 2) $ do
-                      printf "Got you cornered!\n\n"
+                      printd $ printf "Got you cornered!\n"
                     when (winner == Just True && moves_left == 1) $ do
-                      printf "Checkmates!\n\n"
-                    mapM_ putStrLn choice_grid
+                      printd $ printf "Checkmates!\n"
+                    printd $ intercalate "\n" choice_grid
                     putStr "> "
                     hFlush stdout
                     choice:_ <- getLine
                     case lookup choice choices of
-                      Nothing -> do putStrLn "That is not a legal move.\n\n"
+                      Nothing -> do printd "That is not a legal move.\n"
                                     user_to_play g
                       Just m -> do putStrLn ""
                                    next_turn $ play g m
@@ -166,5 +172,5 @@ user_to_play g = do when (winner == Just False && moves_left > 1) $ do
 
 main = do let b = indexed_board (fst board_range)
               g = GameState 0 True b
-          printf "please wait while the computer thinks of a strategy.\n\n"
+          printd "please wait while the computer thinks of a strategy.\n"
           next_turn g
