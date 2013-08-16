@@ -2,6 +2,8 @@ module Main where
 
 import Control.Applicative
 import Control.Monad
+import Data.Array
+import Data.Function
 import Data.Ix
 import Data.List
 
@@ -64,9 +66,9 @@ legal_moves g = filter legal positions
     unoccupied p = (board g `at` p) == Nothing
     above_min p = snd p >= minRow g
 
-play :: Move -> GameState -> GameState
-play (x, y) (GameState minRow  player  board) =
-             GameState minRow' player' board'
+play :: GameState -> Move -> GameState
+play (GameState minRow  player  board) (x, y) =
+      GameState minRow' player' board'
   where
     y' = y + 1
     minRow' = if y' `elem` pos_range then y' else 0
@@ -74,17 +76,38 @@ play (x, y) (GameState minRow  player  board) =
     board'  = set_at (x, y) (Just player) board
 
 
--- -- survive the longest.
--- -- win if possible, but delay the victory;
--- -- if you must lose, survive as long as possible.
--- -- 
--- -- return the best move, the eventual winner,
--- -- and the number of surviving steps.
--- best_move :: GameState -> (Move, Winner, Int)
--- best_move g = maximumBy (compare `on` value) outcome . legal_moves g
+-- the best move at each game state, for each player.
+-- True wants to delay the conclusion of the game, while
+-- False wants to precipitate it.
+-- Both want to win.
+best_moves :: Array GameStateIx (Move, Winner, Int)
+best_moves = array game_range $ map f $ range game_range
+  where
+    f ix = (ix, best_move $ indexed_game ix)
+
+best_move :: GameState -> (Move, Winner, Int)
+best_move g = case winner $ board g of
+                Nothing -> best_from g
+                Just p  -> ((-1, -1), Just p, 0)
+  where
+    best_from = maximumBy (compare `on` value) . (tie:) . map outcome . legal_moves
+    tie = ((-2,-2), Nothing, 0)
+    outcome m = let (_, winner, moves_left) = response m
+                 in (m, winner, moves_left+1)
+    value ((-2,-2), _, _)                          = -3000
+    value (_, winner, _) | winner == Just opponent = -2000
+    value (_, winner, _) | winner == Nothing       = -1000
+    value (_, _, moves_left) = if cur_player then moves_left else -moves_left
+    response = (best_moves !) . game_index . play g
+    opponent = not cur_player
+    cur_player = player g
 
 
-main = putStrLn "typechecks."
--- main = do b <- readBoard <$> getContents
---           print $ printCell $ winner b
--- main = print $ and [boards !! boardIndex b == b | b <- boards]
+main = do b <- readBoard <$> getContents
+          let g = GameState 0 True b
+              (m, winner, _) = best_move g
+          case winner of
+            Just p -> putStrLn $ printPlayer p : " wins!"
+            Nothing -> let g' = play g m
+                           b' = board g'
+                        in putStr $ printBoard b'
