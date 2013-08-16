@@ -57,7 +57,6 @@ You picked another corner, but the computer doesn't think that was a very smart 
     o.x (forbidden)
     4x6
     78o
-    
     > 7
     
     o.x
@@ -79,7 +78,6 @@ Since you played on the last row, and there are no rows after that, the computer
     o.x (forbidden)
     .xx (forbidden)
     o8o
-    
     > 8
     
     o.x
