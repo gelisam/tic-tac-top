@@ -74,11 +74,12 @@ legal_moves g = filter legal positions
     above_min p = snd p >= minRow g
 
 play :: GameState -> Move -> GameState
-play (GameState minRow  player  board) (x, y) =
-      GameState minRow' player' board'
+play (GameState minRow  player  board) (x, y) = g''
   where
-    y' = y + 1
-    minRow' = if y' `elem` pos_range then y' else 0
+    y'  = y + 1
+    y'' = if null (legal_moves g') then 0 else y'
+    g'  = GameState y' player' board'
+    g'' = GameState y'' player' board'
     player' = not player
     board'  = set_at (x, y) (Just player) board
 
