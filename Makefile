@@ -4,8 +4,8 @@ all: test
 test: src/Main.exe
 	./$<
 
-src/Main.exe: src/Main.hs
-	ghc --make $< -o "$@"
+src/Main.exe: src/Main.hs src/Board.hs
+	ghc --make $^ -o "$@"
 
 
 clean:
