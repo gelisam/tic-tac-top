@@ -41,6 +41,12 @@ data GameState = GameState
   }
 type GameStateIx = (Int, PlayerIx, BoardIx)
 
+game_range :: (GameStateIx, GameStateIx)
+game_range = (lo, hi)
+  where
+    lo = (0, fst player_range, fst board_range)
+    hi = (2, snd player_range, snd board_range)
+
 game_index :: GameState -> GameStateIx
 game_index (GameState m p b) = (m, player_index p, board_index b)
 

@@ -4,6 +4,9 @@ module Board where
 type Player = Bool
 type PlayerIx = Int
 
+player_range :: (PlayerIx, PlayerIx)
+player_range = (1,2)
+
 player_index :: Player -> PlayerIx
 player_index p = if p then 1 else 2
 
@@ -14,6 +17,9 @@ indexed_player 2 = False
 
 type Cell = Maybe Player
 type CellIx = Int
+
+cell_range :: (CellIx, CellIx)
+cell_range = (0,2)
 
 cell_index :: Cell -> CellIx
 cell_index Nothing = 0
@@ -28,6 +34,14 @@ type Board = [[Cell]]
 type BoardIx = (CellIx,(CellIx,(CellIx,
                (CellIx,(CellIx,(CellIx,
                (CellIx,(CellIx,(CellIx)))))))))
+
+board_range :: (BoardIx, BoardIx)
+board_range = (board9 empty, board9 full)
+  where
+    empty = fst cell_range
+    full  = snd cell_range
+    board9 = board_index . replicate9 . indexed_cell
+    replicate9 = replicate 3 . replicate 3
 
 board_index :: Board -> BoardIx
 board_index = go . (map.map) cell_index
