@@ -112,7 +112,7 @@ inspect_game :: GameState -> IO ()
 inspect_game g = do putStrLn $ printBoard b
                     case winner b of
                       Nothing    -> return ()
-                      Just True  -> do putStrLn "Indeed, I win."
+                      Just True  -> do putStrLn "The computer wins."
                                        exitSuccess
                       Just False -> do putStrLn "You win!"
                                        exitSuccess
@@ -130,14 +130,22 @@ next_turn g = do inspect_game g
 
 ai_to_play :: GameState -> IO ()
 ai_to_play g = do when (winner == Just True && moves_left > 1) $ do
-                    printf "I think I can win in %d moves.\n\n" moves_left
+                    printf "I think I can win in %d moves.\n\n" (moves_left `quot` 2)
+                  when (winner == Just False && moves_left == 2) $ do
+                    printf "Clever trap!\n\n"
+                  when (winner == Just False && moves_left == 1) $ do
+                    printf "You tricked me!\n\n"
                   next_turn $ play g m
   where
     (m, winner, moves_left) = best_move g
 
 user_to_play :: GameState -> IO ()
 user_to_play g = do when (winner == Just False && moves_left > 1) $ do
-                      printf "You could win in %d moves.\n\n" moves_left
+                      printf "You could win in %d moves.\n\n" (moves_left `quot` 2)
+                    when (winner == Just True && moves_left == 2) $ do
+                      printf "Got you cornered!\n\n"
+                    when (winner == Just True && moves_left == 1) $ do
+                      printf "Checkmates!\n\n"
                     mapM_ putStrLn choice_grid
                     putStr "> "
                     hFlush stdout
@@ -158,4 +166,5 @@ user_to_play g = do when (winner == Just False && moves_left > 1) $ do
 
 main = do let b = indexed_board (fst board_range)
               g = GameState 0 True b
+          printf "please wait while the computer thinks of a strategy.\n\n"
           next_turn g
