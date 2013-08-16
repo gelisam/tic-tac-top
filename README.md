@@ -73,7 +73,7 @@ You deftly block the computer's diagonal. The full rules for forbidden rows is t
     
     Checkmates!
 
-Since you played on the last row, and there are no rows after that, the computer is allowed the computer to play anywhere. It used the opportunity to trap you into a corner!
+Since you played on the last row, and there are no rows after that, the computer is allowed to play anywhere. It used the opportunity to trap you into a corner!
 
     o.x (forbidden)
     .xx (forbidden)
