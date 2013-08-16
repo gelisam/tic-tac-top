@@ -1,10 +1,6 @@
 module Board where
 
 
-bools :: [Bool]
-bools = [True, False]
-
-
 type Player = Bool
 type PlayerIx = Int
 
