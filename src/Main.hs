@@ -4,7 +4,7 @@ import Control.Applicative
 import Control.Monad
 import Data.Bits
 import Data.Function
-import qualified Data.Ix as I
+import Data.Ix
 import Data.List
 import Data.Maybe
 
@@ -65,11 +65,11 @@ set_at (x, y) c b = top
     (top, row:bottom) = splitAt y b
     (left,  _:right)  = splitAt x row
 
-range :: [Int]
-range = [0..2]
+pos_range :: [Int]
+pos_range = [0..2]
 
-positions = [(x, y) | x <- range
-                    , y <- range
+positions = [(x, y) | x <- pos_range
+                    , y <- pos_range
                     ]
 
 
@@ -82,10 +82,10 @@ winner b = h_loser
        <|> d2_winner
   where
     h_loser = fmap not h_winner
-    h_winner  = lookup_winners [[(x,  y) | x <- range] | y <- range]
-    v_winner  = lookup_winners [[(x,  y) | y <- range] | x <- range]
-    d1_winner = lookup_winners [[(i,  i) | i <- range]]
-    d2_winner = lookup_winners [[(i,2-i) | i <- range]]
+    h_winner  = lookup_winners [[(x,  y) | x <- pos_range] | y <- pos_range]
+    v_winner  = lookup_winners [[(x,  y) | y <- pos_range] | x <- pos_range]
+    d1_winner = lookup_winners [[(i,  i) | i <- pos_range]]
+    d2_winner = lookup_winners [[(i,2-i) | i <- pos_range]]
     
     lookup_winners :: [[Pos]] -> Maybe Player
     lookup_winners = msum . map lookup_winner
@@ -120,7 +120,7 @@ play (x, y) (GameState minRow  player  board) =
              GameState minRow' player' board'
   where
     y' = y + 1
-    minRow' = if y' `elem` range then y' else 0
+    minRow' = if y' `elem` pos_range then y' else 0
     player' = not player
     board'  = set_at (x, y) (Just player) board
 
