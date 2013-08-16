@@ -14,18 +14,42 @@ bools = [True, False]
 
 
 type Player = Bool
+type PlayerIx = Int
 
-players :: [Player]
-players = bools
+player_index :: Player -> PlayerIx
+player_index p = if p then 1 else 2
+
+indexed_player :: PlayerIx -> Player
+indexed_player 1 = True
+indexed_player 2 = False
 
 
 type Cell = Maybe Player
+type CellIx = Int
 
-cells :: [Cell]
-cells = Nothing : map Just players
+cell_index :: Cell -> CellIx
+cell_index Nothing = 0
+cell_index (Just x) = player_index x
+
+indexed_cell :: CellIx -> Cell
+indexed_cell 0 = Nothing
+indexed_cell x = Just (indexed_player x)
 
 
 type Board = [[Cell]]
+type BoardIx = (CellIx,(CellIx,(CellIx,
+               (CellIx,(CellIx,(CellIx,
+               (CellIx,(CellIx,(CellIx)))))))))
+
+board_index :: Board -> BoardIx
+board_index = go . (map.map) cell_index
+  where
+    go [[a,b,c],[d,e,f],[g,h,i]] = (a,(b,(c,(d,(e,(f,(g,(h,i))))))))
+
+indexed_board :: BoardIx -> Board
+indexed_board = (map.map) indexed_cell . go
+  where
+    go (a,(b,(c,(d,(e,(f,(g,(h,i)))))))) = [[a,b,c],[d,e,f],[g,h,i]]
 
 
 readPlayer :: Char -> Player
@@ -104,6 +128,14 @@ data GameState = GameState
   , player :: Player
   , board :: Board
   }
+type GameStateIx = (Int, PlayerIx, BoardIx)
+
+game_index :: GameState -> GameStateIx
+game_index (GameState m p b) = (m, player_index p, board_index b)
+
+indexed_game :: GameStateIx -> GameState
+indexed_game (m, p, b) = GameState m (indexed_player p) (indexed_board b)
+
 
 type Move = Pos
 
