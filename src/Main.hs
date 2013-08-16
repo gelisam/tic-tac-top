@@ -160,7 +160,7 @@ user_to_play g = do when (winner == Just False && moves_left > 1) $ do
                       printd $ printf "Got you cornered!\n"
                     when (winner == Just True && moves_left == 1) $ do
                       printd $ printf "Checkmates!\n"
-                    printd $ markBoard g $ unlines choice_grid
+                    putStr $ markBoard g $ unlines choice_grid
                     putStr "> "
                     hFlush stdout
                     choice:_ <- getLine
