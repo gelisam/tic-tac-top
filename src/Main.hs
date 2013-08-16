@@ -115,8 +115,13 @@ printd :: String -> IO ()
 printd s = do threadDelay 500000
               putStrLn s
 
+markBoard :: GameState -> String -> String
+markBoard g = unlines . mark . lines where
+  mark xs = zipWith (++) xs marks
+  marks = replicate (minRow g) " (forbidden)" ++ repeat ""
+
 inspect_game :: GameState -> IO ()
-inspect_game g = do putStrLn $ printBoard b
+inspect_game g = do putStrLn $ (if player g then markBoard g else id) $ printBoard b
                     case winner b of
                       Nothing    -> return ()
                       Just True  -> do printd "The computer wins."
@@ -142,8 +147,9 @@ ai_to_play g = do when (winner == Just True && moves_left > 1) $ do
                     printd $ printf "Clever trap!\n"
                   when (winner == Just False && moves_left == 1) $ do
                     printd $ printf "You tricked me!\n"
+                  let g' = play g m
                   threadDelay 500000
-                  next_turn $ play g m
+                  next_turn g'
   where
     (m, winner, moves_left) = best_move g
 
@@ -154,7 +160,7 @@ user_to_play g = do when (winner == Just False && moves_left > 1) $ do
                       printd $ printf "Got you cornered!\n"
                     when (winner == Just True && moves_left == 1) $ do
                       printd $ printf "Checkmates!\n"
-                    printd $ intercalate "\n" choice_grid
+                    printd $ markBoard g $ unlines choice_grid
                     putStr "> "
                     hFlush stdout
                     choice:_ <- getLine
@@ -162,7 +168,11 @@ user_to_play g = do when (winner == Just False && moves_left > 1) $ do
                       Nothing -> do printd "That is not a legal move.\n"
                                     user_to_play g
                       Just m -> do putStrLn ""
-                                   next_turn $ play g m
+                                   let g' = play g m
+                                   when (minRow g' > 0) $ do
+                                     putStrLn $ printBoard $ board g'
+                                     threadDelay 500000
+                                   next_turn g'
   where
     b = board g
     (_, winner, moves_left) = best_move g
