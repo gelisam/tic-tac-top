@@ -27,87 +27,6 @@ cells = Nothing : map Just players
 
 type Board = [[Cell]]
 
--- crowded boards first
-boards :: [Board]
-boards = [split3 cells | n <- [9,8..0]
-                       , pattern <- patterns 9 n
-                       , xs <- replicateM n players
-                       , let player_string = map Just xs
-                       , let blank_string = repeat Nothing
-                       , let cells = knit pattern player_string
-                                                  blank_string
-                       ]
-  where
-    split3 (a:b:c:d:e:f:g:h:i:[]) = [[a,b,c],[d,e,f],[g,h,i]]
-    
-    -- knit two strings together into a single strand,
-    -- according to the pattern.
-    knit :: [Bool] -> [a] -> [a] -> [a]
-    knit []         _      _      = []
-    knit (True :ps) (t:ts) fs     = t : knit ps ts fs
-    knit (False:ps) ts     (f:fs) = f : knit ps ts fs
-
--- n booleans, k of which are true.
-patterns :: Int -> Int -> [[Bool]]
-patterns n k | k == 0 = [replicate n False]
-patterns n k | k == n = [replicate n True]
-patterns n k | otherwise = [x:xs | x <- bools
-                                 , xs <- (n-1) `patterns` if x then k-1 else k]
-
-patterns_with :: Int -> Int -> Int
-patterns_with n k = n `choose` k
-  where
-    -- http://stackoverflow.com/questions/6806946/built-in-factorial-function-in-haskell
-    choose :: Int -> Int -> Int
-    choose n 0 = 1
-    choose 0 k = 0
-    choose n k = choose (n-1) (k-1) * n `div` k 
-
-data BoardIx = BoardIx { runBoardIx :: Board }
-               deriving Eq
-
-instance Ord BoardIx where
-instance I.Ix BoardIx where
-
--- boards_with_crowd :: Int -> Int
--- boards_with_crowd k = boards_with_slots k * (9 `choose` k)
--- 
--- -- k available slots for non-empty cells
--- boards_with_slots :: Int -> Int
--- boards_with_slots k = 2 ^ k
--- 
--- -- True for non-empty cells
--- boards_with_pattern :: [Bool] -> Int
--- boards_with_pattern = boards_with_slots . length . filter id
-
--- -- boards !! boardIndex b == b
--- boardIndex :: Board -> (Int, Int, Int)
--- boardIndex xss = (count_offset, pattern_number, player_number)
---   where
---     xs = concat xss
---     count = length . filter isJust $ xs
---     pattern = map isJust $ xs
---     player_string = map fromJust . filter isJust $ xs
---     
---     count_number = 9 - count
---     pattern_number = fromBools pattern
---     player_number = fromBools player_string
---     
---     -- most-significant first, beginning with True
---     fromBools :: [Bool] -> Int
---     fromBools = fromBits . reverse . map not
---     
---     -- least-significant first, beginning with False
---     fromBits :: [Bool] -> Int
---     fromBits [] = 0
---     fromBits (x:xs) = fromBit x + 2 * fromBits xs
---     fromBit x = if x then 1 else 0
---     
---     count_sizes = [(2 ^ k) * (9 `choose` k) | k <- [9,8..0]]
---     count_offset = sum $ take count_number count_sizes
---     
---     pattern_offset = (2 ^ count) * pattern_number
-
 
 readPlayer :: Char -> Player
 readPlayer 'x' = True
@@ -205,13 +124,6 @@ play (x, y) (GameState minRow  player  board) =
     player' = not player
     board'  = set_at (x, y) (Just player) board
 
--- all game states, crowded boards first
-game_states :: [GameState]
-game_states = [GameState minRow player board | board <- boards
-                                             , minRow <- [0..2]
-                                             , player <- players
-                                             ]
-
 
 -- -- survive the longest.
 -- -- win if possible, but delay the victory;
@@ -223,8 +135,7 @@ game_states = [GameState minRow player board | board <- boards
 -- best_move g = maximumBy (compare `on` value) outcome . legal_moves g
 
 
--- main = putStrLn "typechecks."
+main = putStrLn "typechecks."
 -- main = do b <- readBoard <$> getContents
 --           print $ printCell $ winner b
 -- main = print $ and [boards !! boardIndex b == b | b <- boards]
-main = print $ and [length (patterns 9 k) == patterns_with 9 k | k <- [0..9]]  -- True
