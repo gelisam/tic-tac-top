@@ -80,7 +80,7 @@ printBoard = unlines . (map.map) printCell
 
 type Pos = (Int, Int)
 
-at :: Board -> Pos -> Cell
+at :: [[a]] -> Pos -> a
 at b (x, y) = b !! y !! x
 
 set_at :: Pos -> Cell -> Board -> Board

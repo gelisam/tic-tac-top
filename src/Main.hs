@@ -6,6 +6,9 @@ import Data.Array
 import Data.Function
 import Data.Ix
 import Data.List
+import Text.Printf
+import System.Exit
+import System.IO
 
 import Board
 
@@ -34,6 +37,8 @@ winner b = h_loser
       [maybe_p] -> maybe_p
       _         -> Nothing
 
+tie :: GameState -> Bool
+tie = null . legal_moves
 
 
 data GameState = GameState
@@ -103,11 +108,54 @@ best_move g = case winner $ board g of
     cur_player = player g
 
 
-main = do b <- readBoard <$> getContents
-          let g = GameState 0 True b
-              (m, winner, _) = best_move g
-          case winner of
-            Just p -> putStrLn $ printPlayer p : " wins!"
-            Nothing -> let g' = play g m
-                           b' = board g'
-                        in putStr $ printBoard b'
+inspect_game :: GameState -> IO ()
+inspect_game g = do putStrLn $ printBoard b
+                    case winner b of
+                      Nothing    -> return ()
+                      Just True  -> do putStrLn "Indeed, I win."
+                                       exitSuccess
+                      Just False -> do putStrLn "You win!"
+                                       exitSuccess
+                    when (tie g) $ do
+                      putStrLn "It's a tie."
+                      exitSuccess
+  where
+    b = board g
+
+next_turn :: GameState -> IO ()
+next_turn g = do inspect_game g
+                 if player g
+                   then ai_to_play g
+                   else user_to_play g
+
+ai_to_play :: GameState -> IO ()
+ai_to_play g = do when (winner == Just True && moves_left > 1) $ do
+                    printf "I think I can win in %d moves.\n\n" moves_left
+                  next_turn $ play g m
+  where
+    (m, winner, moves_left) = best_move g
+
+user_to_play :: GameState -> IO ()
+user_to_play g = do when (winner == Just False && moves_left > 1) $ do
+                      printf "You could win in %d moves.\n\n" moves_left
+                    mapM_ putStrLn choice_grid
+                    putStr "> "
+                    hFlush stdout
+                    choice:_ <- getLine
+                    case lookup choice choices of
+                      Nothing -> do putStrLn "That is not a legal move.\n\n"
+                                    user_to_play g
+                      Just m -> do putStrLn ""
+                                   next_turn $ play g m
+  where
+    (_, winner, moves_left) = best_move g
+    
+    full_choice_grid = ["123","456","789"]
+    choice_grid = (map.map) dot_if_invalid full_choice_grid
+    dot_if_invalid c = if valid_choice c then c else '.'
+    valid_choice k = k `elem` map fst choices
+    choices = [(full_choice_grid `at` m, m) | m <- legal_moves g]
+
+main = do let b = indexed_board (fst board_range)
+              g = GameState 0 True b
+          next_turn g
