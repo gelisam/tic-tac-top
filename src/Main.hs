@@ -148,7 +148,7 @@ ai_to_play g = do when (winner == Just True && moves_left > 1) $ do
 
 user_to_play :: GameState -> IO ()
 user_to_play g = do when (winner == Just False && moves_left > 1) $ do
-                      printd $ printf "You could win in %d moves.\n" (moves_left `quot` 2)
+                      printd $ printf "You could win in %d moves.\n" ((moves_left + 1) `quot` 2)
                     when (winner == Just True && moves_left == 2) $ do
                       printd $ printf "Got you cornered!\n"
                     when (winner == Just True && moves_left == 1) $ do
@@ -176,6 +176,6 @@ user_to_play g = do when (winner == Just False && moves_left > 1) $ do
     cell_map = [(full_choice_grid `at` m, b `at` m) | m <- positions]
 
 main = do let b = indexed_board (fst board_range)
-              g = GameState 0 True b
-          printd "please wait while the computer thinks of a strategy.\n"
+              g = GameState 0 False b
+          printd "please wait while the computer evaluates your chances.\n"
           next_turn g
