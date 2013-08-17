@@ -52,7 +52,7 @@ ai_to_play g = do when (winner == Just True && moves_left > 1) $ do
                   threadDelay 500000
                   next_turn g'
   where
-    (m, winner, moves_left) = best_move g
+    (Just m, winner, moves_left) = best_move g
 
 user_to_play :: GameState -> IO ()
 user_to_play g = do when (winner == Just False && moves_left > 1) $ do
@@ -64,7 +64,8 @@ user_to_play g = do when (winner == Just False && moves_left > 1) $ do
                     putStr $ markBoard g $ unlines choice_grid
                     putStr "> "
                     hFlush stdout
-                    choice:_ <- getLine
+                    line <- getLine
+                    let choice = if null line then '.' else head line
                     case lookup choice choices of
                       Nothing -> do printd "That is not a legal move.\n"
                                     user_to_play g
@@ -87,12 +88,7 @@ user_to_play g = do when (winner == Just False && moves_left > 1) $ do
     cell_at = printCell . fromJust . flip lookup cell_map
     cell_map = [(full_choice_grid `at` m, b `at` m) | m <- positions]
 
--- main = do let b = indexed_board (fst board_range)
---               g = GameState 0 False b
---           printd "please wait while the computer evaluates your chances.\n"
---           next_turn g
-main = print $ and [(best_moves!i) `eq` (best_moves'!i) | i <- range game_range]
-  where
-    eq ((-1,-1),b,c) (a',b',c') = (Nothing, b, c) == (a', b', c')
-    eq ((-2,-2),b,c) (a',b',c') = (Nothing, b, c) == (a', b', c')
-    eq (a,b,c) (a',b',c') = (Just a, b, c) == (a', b', c')
+main = do let b = indexed_board (fst board_range)
+              g = GameState 0 False b
+          printd "please wait while the computer evaluates your chances.\n"
+          next_turn g

@@ -82,37 +82,15 @@ play (GameState minRow  player  board) (x, y) = g''
 -- True wants to delay the conclusion of the game, while
 -- False wants to precipitate it.
 -- Both want to win.
-best_moves :: Array GameStateIx (Move, Winner, Int)
+best_moves :: Array GameStateIx (Maybe Move, Winner, Int)
 best_moves = array game_range $ map f $ range game_range
   where
     f ix = (ix, best_move $ indexed_game ix)
 
-best_move :: GameState -> (Move, Winner, Int)
+best_move :: GameState -> (Maybe Move, Winner, Int)
 best_move g = case winner $ board g of
                 Nothing -> best_from g
-                Just p  -> ((-1, -1), Just p, 0)
-  where
-    best_from = maximumBy (compare `on` value) . (tie:) . map outcome . legal_moves
-    tie = ((-2,-2), Nothing, 0)
-    outcome m = let (_, winner, moves_left) = response m
-                 in (m, winner, moves_left+1)
-    value ((-2,-2), _, _)                          = -3000
-    value (_, winner, _) | winner == Just opponent = -2000
-    value (_, winner, _) | winner == Nothing       = -1000
-    value (_, _, moves_left) = if cur_player then moves_left else -moves_left
-    response = (best_moves !) . game_index . play g
-    opponent = not cur_player
-    cur_player = player g
-
-best_moves' :: Array GameStateIx (Maybe Move, Winner, Int)
-best_moves' = array game_range $ map f $ range game_range
-  where
-    f ix = (ix, best_move' $ indexed_game ix)
-
-best_move' :: GameState -> (Maybe Move, Winner, Int)
-best_move' g = case winner $ board g of
-                 Nothing -> best_from g
-                 Just p  -> (Nothing, Just p, 0)
+                Just p  -> (Nothing, Just p, 0)
   where
     best_from = maximumBy (compare `on` value) . (tie:) . map outcome . legal_moves
     tie = (Nothing, Nothing, 0)
@@ -122,6 +100,6 @@ best_move' g = case winner $ board g of
     value (_, winner, _) | winner == Just opponent = -2000
     value (_, winner, _) | winner == Nothing       = -1000
     value (_, _, moves_left) = if cur_player then moves_left else -moves_left
-    response = (best_moves' !) . game_index . play g
+    response = (best_moves !) . game_index . play g
     opponent = not cur_player
     cur_player = player g
