@@ -110,6 +110,28 @@ best_move g = case winner $ board g of
     opponent = not cur_player
     cur_player = player g
 
+best_moves' :: Array GameStateIx (Maybe Move, Winner, Int)
+best_moves' = array game_range $ map f $ range game_range
+  where
+    f ix = (ix, best_move' $ indexed_game ix)
+
+best_move' :: GameState -> (Maybe Move, Winner, Int)
+best_move' g = case winner $ board g of
+                 Nothing -> best_from g
+                 Just p  -> (Nothing, Just p, 0)
+  where
+    best_from = maximumBy (compare `on` value) . (tie:) . map outcome . legal_moves
+    tie = (Nothing, Nothing, 0)
+    outcome m = let (     _, winner, moves_left  ) = response m
+                 in (Just m, winner, moves_left+1)
+    value (Nothing, _, _)                          = -3000
+    value (_, winner, _) | winner == Just opponent = -2000
+    value (_, winner, _) | winner == Nothing       = -1000
+    value (_, _, moves_left) = if cur_player then moves_left else -moves_left
+    response = (best_moves' !) . game_index . play g
+    opponent = not cur_player
+    cur_player = player g
+
 
 printd :: String -> IO ()
 printd s = do threadDelay 500000
@@ -186,7 +208,12 @@ user_to_play g = do when (winner == Just False && moves_left > 1) $ do
     cell_at = printCell . fromJust . flip lookup cell_map
     cell_map = [(full_choice_grid `at` m, b `at` m) | m <- positions]
 
-main = do let b = indexed_board (fst board_range)
-              g = GameState 0 False b
-          printd "please wait while the computer evaluates your chances.\n"
-          next_turn g
+-- main = do let b = indexed_board (fst board_range)
+--               g = GameState 0 False b
+--           printd "please wait while the computer evaluates your chances.\n"
+--           next_turn g
+main = print $ and [(best_moves!i) `eq` (best_moves'!i) | i <- range game_range]
+  where
+    eq ((-1,-1),b,c) (a',b',c') = (Nothing, b, c) == (a', b', c')
+    eq ((-2,-2),b,c) (a',b',c') = (Nothing, b, c) == (a', b', c')
+    eq (a,b,c) (a',b',c') = (Just a, b, c) == (a', b', c')
