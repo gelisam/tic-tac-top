@@ -7,6 +7,7 @@ import Data.Array
 import Data.Function
 import Data.List
 
+import Player
 import Board
 import Game
 

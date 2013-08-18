@@ -4,7 +4,7 @@ all: test
 test: src/Main.exe
 	./$<
 
-src/Main.exe: src/Main.hs src/Board.hs src/Game.hs src/TicTacTop.hs
+src/Main.exe: src/Player.hs src/Board.hs src/Game.hs src/TicTacTop.hs src/Main.hs
 	ghc --make $^ -o "$@"
 
 

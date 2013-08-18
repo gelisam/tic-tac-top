@@ -7,7 +7,7 @@ import Data.Array
 import Data.Function
 import Data.List
 
-import Board
+import Player
 
 
 type Winner = Maybe Player
