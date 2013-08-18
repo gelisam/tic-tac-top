@@ -1,4 +1,4 @@
-{-# OPTIONS -XTypeFamilies -XFlexibleContexts #-}
+{-# OPTIONS -XTypeFamilies -XFlexibleContexts -XScopedTypeVariables #-}
 module Game where
 
 import Control.Applicative
@@ -99,9 +99,10 @@ type BestMove a = (Maybe (GameMove a), Winner, Int)
 -- True wants to delay the conclusion of the game, while
 -- False wants to precipitate it.
 -- Both want to win.
-best_moves' :: (Game a, Ix (GameIx a))
+best_moves' :: forall a. (Game a, Ix (GameIx a))
             => Array (GameIx a) (BestMove a)
-best_moves' = array game_range' [(ix, f ix) | ix <- range game_range']
+            -> Array (GameIx a) (BestMove a)
+best_moves' memo = array game_range' [(ix, f ix) | ix <- range game_range']
   where
     f = best_move' . indexed_game'
     
@@ -120,7 +121,9 @@ best_moves' = array game_range' [(ix, f ix) | ix <- range game_range']
         value (_, winner, _) | winner == Just opponent = -2000
         value (_, winner, _) | winner == Nothing       = -1000
         value (_, _, moves_left) = if cur_player then moves_left else -moves_left
-        response = (best_moves' !) . game_index' . play' g
+        -- lookup the response in the _memoized_ version
+        -- (a recursive call to best_moves would be slow)
+        response = (memo !) . game_index' . play' g
         opponent = not cur_player
         cur_player = player' g
 
@@ -143,24 +146,10 @@ instance Game GameState where
   legal_moves' = map Move' . legal_moves
   play' g = play g . runMove'
 
-best_moves :: Array GameStateIx (Maybe Move, Winner, Int)
-best_moves = array game_range $ map f $ range game_range
-  where
-    f ix = (ix, best_move $ indexed_game ix)
+best_moves :: Array (GameIx GameState) (Maybe (GameMove GameState), Winner, Int)
+best_moves = fix best_moves'
 
 best_move :: GameState -> (Maybe Move, Winner, Int)
-best_move g = case winner $ board g of
-                Nothing -> best_from g
-                Just p  -> (Nothing, Just p, 0)
+best_move = adjust . (best_moves!) . GameStateIx' . game_index
   where
-    best_from = maximumBy (compare `on` value) . (tie:) . map outcome . legal_moves
-    tie = (Nothing, Nothing, 0)
-    outcome m = let (     _, winner, moves_left  ) = response m
-                 in (Just m, winner, moves_left+1)
-    value (Nothing, _, _)                          = -3000
-    value (_, winner, _) | winner == Just opponent = -2000
-    value (_, winner, _) | winner == Nothing       = -1000
-    value (_, _, moves_left) = if cur_player then moves_left else -moves_left
-    response = (best_moves !) . game_index . play g
-    opponent = not cur_player
-    cur_player = player g
+    adjust (m, w, i) = (fmap runMove' m, w, i)
