@@ -129,13 +129,17 @@ instance Game GameState where
   player' = player
   winner' = winner . board
   
-  newtype GameIx GameState = GameStateIx' {runGameStateIx' :: GameStateIx}
+  newtype GameIx GameState = GameStateIx'
+     { runGameStateIx' :: GameStateIx
+     } deriving (Eq, Ord, Ix)
   game_range' = let (x, y) = game_range
                  in (GameStateIx' x, GameStateIx' y)
   game_index' = GameStateIx' . game_index
   indexed_game' = indexed_game . runGameStateIx'
   
-  newtype GameMove GameState = Move' {runMove' :: Move}
+  newtype GameMove GameState = Move'
+      { runMove' :: Move
+      } deriving (Eq, Ord)
   legal_moves' = map Move' . legal_moves
   play' g = play g . runMove'
 
