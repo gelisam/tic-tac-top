@@ -10,6 +10,7 @@ import System.IO
 
 import Board
 import Game
+import TicTacTop
 
 
 printd :: String -> IO ()
