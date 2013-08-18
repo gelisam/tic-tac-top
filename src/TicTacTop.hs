@@ -10,6 +10,7 @@ import Data.List
 import Player
 import Board
 import Game
+import AI
 
 
 data GameState = GameState

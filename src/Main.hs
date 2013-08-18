@@ -10,6 +10,7 @@ import System.IO
 import Player
 import Board
 import Game
+import AI
 import TicTacTop
 
 
