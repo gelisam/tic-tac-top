@@ -18,12 +18,12 @@ printd :: String -> IO ()
 printd s = do threadDelay 500000
               putStrLn s
 
-markBoard :: GameState -> String -> String
+markBoard :: TicTacTop -> String -> String
 markBoard g = unlines . mark . lines where
   mark xs = zipWith (++) xs marks
   marks = replicate (minRow g) " (forbidden)" ++ repeat ""
 
-inspect_game :: GameState -> IO ()
+inspect_game :: TicTacTop -> IO ()
 inspect_game g = do putStrLn $ (if player g then markBoard g else id) $ printBoard b
                     case winner g of
                       Nothing    -> return ()
@@ -37,13 +37,13 @@ inspect_game g = do putStrLn $ (if player g then markBoard g else id) $ printBoa
   where
     b = board g
 
-next_turn :: GameState -> IO ()
+next_turn :: TicTacTop -> IO ()
 next_turn g = do inspect_game g
                  if player g
                    then ai_to_play g
                    else user_to_play g
 
-ai_to_play :: GameState -> IO ()
+ai_to_play :: TicTacTop -> IO ()
 ai_to_play g = do when (winner == Just True && moves_left > 1) $ do
                     printd $ printf "I think I can win in %d moves.\n" (moves_left `quot` 2)
                   when (winner == Just False && moves_left == 2) $ do
@@ -56,7 +56,7 @@ ai_to_play g = do when (winner == Just True && moves_left > 1) $ do
   where
     (Just m, winner, moves_left) = best_move g
 
-user_to_play :: GameState -> IO ()
+user_to_play :: TicTacTop -> IO ()
 user_to_play g = do when (winner == Just False && moves_left > 1) $ do
                       printd $ printf "You could win in %d moves.\n" ((moves_left + 1) `quot` 2)
                     when (winner == Just True && moves_left == 2) $ do
@@ -90,6 +90,6 @@ user_to_play g = do when (winner == Just False && moves_left > 1) $ do
     cell_at = printCell . fromJust . flip lookup cell_map
     cell_map = [(full_choice_grid `at` m, b `at` m) | m <- positions]
 
-play_game :: GameState -> IO ()
+play_game :: TicTacTop -> IO ()
 play_game g = do printd "please wait while the computer evaluates your chances.\n"
                  next_turn g

@@ -13,13 +13,13 @@ import Game
 import AI
 
 
-data GameState = GameState
+data TicTacTop = TicTacTop
   { minRow :: Int
   , player :: Player
   , board :: Board
   }
 
-instance Game GameState where
+instance Game TicTacTop where
   current_player = player
   
   winner g = h_loser
@@ -45,7 +45,7 @@ instance Game GameState where
         _         -> Nothing
   
   
-  data GameIx GameState = GameIx
+  data GameIx TicTacTop = GameIx
      { minRowIx :: Int
      , playerIx :: PlayerIx
      , boardIx  :: BoardIx
@@ -56,20 +56,20 @@ instance Game GameState where
       lo = GameIx 0 (fst player_range) (fst board_range)
       hi = GameIx 2 (snd player_range) (snd board_range)
   
-  game_index (GameState m p b) = GameIx
+  game_index (TicTacTop m p b) = GameIx
                                { minRowIx = m
                                , playerIx = player_index p
                                , boardIx  = board_index b
                                }
   
-  indexed_game (GameIx m p b) = GameState
+  indexed_game (GameIx m p b) = TicTacTop
                               { minRow = m
                               , player = indexed_player p
                               , board  = indexed_board b
                               }
   
   
-  newtype GameMove GameState = GameMove
+  newtype GameMove TicTacTop = GameMove
       { movePos :: Pos
       } deriving (Eq, Ord)
   
@@ -85,10 +85,10 @@ instance Game GameState where
       (x, y) = movePos m
       y'  = y + 1
       y'' = if null (legal_moves g') then 0 else y'
-      GameState minRow player board = g
-      g'  = GameState y' player' board'
-      g'' = GameState y'' player' board'
+      TicTacTop minRow player board = g
+      g'  = TicTacTop y' player' board'
+      g'' = TicTacTop y'' player' board'
       player' = not player
       board'  = set_at (x, y) (Just player) board
 
-instance AI GameState where
+instance AI TicTacTop where

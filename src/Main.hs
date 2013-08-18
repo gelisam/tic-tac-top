@@ -16,5 +16,5 @@ import Play
 
 
 main = do let b = indexed_board (fst board_range)
-              g = GameState 0 False b
+              g = TicTacTop 0 False b
           play_game g
