@@ -1,8 +1,6 @@
 {-# OPTIONS -XTypeFamilies -XFlexibleContexts -XScopedTypeVariables #-}
 module Game where
 
-import Control.Applicative
-import Control.Monad
 import Data.Array
 import Data.Function
 import Data.List

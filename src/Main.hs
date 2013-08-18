@@ -2,12 +2,12 @@ module Main where
 
 import Control.Monad
 import Control.Concurrent
-import Data.Array
 import Data.Maybe
 import Text.Printf
 import System.Exit
 import System.IO
 
+import Player
 import Board
 import Game
 import TicTacTop

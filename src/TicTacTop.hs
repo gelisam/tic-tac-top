@@ -1,4 +1,4 @@
-{-# OPTIONS -XTypeFamilies -XFlexibleContexts -XScopedTypeVariables #-}
+{-# OPTIONS -XTypeFamilies #-}
 module TicTacTop where
 
 import Control.Applicative
