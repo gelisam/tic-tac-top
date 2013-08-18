@@ -1,4 +1,4 @@
-{-# OPTIONS -XTypeFamilies -XFlexibleContexts -XScopedTypeVariables #-}
+{-# OPTIONS -XTypeFamilies -XFlexibleContexts -XScopedTypeVariables -XDefaultSignatures -XFlexibleContexts #-}
 module Game where
 
 import Data.Array
@@ -60,3 +60,14 @@ mkBestMoves memo = array game_range [(ix, f ix) | ix <- range game_range]
         response = (memo !) . game_index . play g
         opponent = not cur_player
         cur_player = current_player g
+
+
+class Game a => AI a where
+  best_moves :: Array (GameIx a) (BestMove a)
+  best_move :: a -> BestMove a
+  
+  default best_moves :: Ix (GameIx a) => Array (GameIx a) (BestMove a)
+  best_moves = fix mkBestMoves
+  
+  default best_move :: Ix (GameIx a) => a -> BestMove a
+  best_move = (best_moves!) . game_index

@@ -90,9 +90,4 @@ instance Game GameState where
       player' = not player
       board'  = set_at (x, y) (Just player) board
 
-
-best_moves :: Array (GameIx GameState) (BestMove GameState)
-best_moves = fix mkBestMoves
-
-best_move :: GameState -> BestMove GameState
-best_move = (best_moves!) . game_index
+instance AI GameState where
