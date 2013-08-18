@@ -104,25 +104,25 @@ best_moves' :: (Game a, Ix (GameIx a))
 best_moves' = array game_range' [(ix, f ix) | ix <- range game_range']
   where
     f = best_move' . indexed_game'
-
-best_move' :: (Game a, Ix (GameIx a))
-           => a
-           -> BestMove a
-best_move' g = case winner' g of
-                 Nothing -> best_from g
-                 Just p  -> (Nothing, Just p, 0)
-  where
-    best_from = maximumBy (compare `on` value) . (tie:) . map outcome . legal_moves'
-    tie = (Nothing, Nothing, 0)
-    outcome m = let (     _, winner, moves_left  ) = response m
-                 in (Just m, winner, moves_left+1)
-    value (Nothing, _, _)                          = -3000
-    value (_, winner, _) | winner == Just opponent = -2000
-    value (_, winner, _) | winner == Nothing       = -1000
-    value (_, _, moves_left) = if cur_player then moves_left else -moves_left
-    response = (best_moves' !) . game_index' . play' g
-    opponent = not cur_player
-    cur_player = player' g
+    
+    best_move' :: (Game a, Ix (GameIx a))
+               => a
+               -> BestMove a
+    best_move' g = case winner' g of
+                     Nothing -> best_from g
+                     Just p  -> (Nothing, Just p, 0)
+      where
+        best_from = maximumBy (compare `on` value) . (tie:) . map outcome . legal_moves'
+        tie = (Nothing, Nothing, 0)
+        outcome m = let (     _, winner, moves_left  ) = response m
+                     in (Just m, winner, moves_left+1)
+        value (Nothing, _, _)                          = -3000
+        value (_, winner, _) | winner == Just opponent = -2000
+        value (_, winner, _) | winner == Nothing       = -1000
+        value (_, _, moves_left) = if cur_player then moves_left else -moves_left
+        response = (best_moves' !) . game_index' . play' g
+        opponent = not cur_player
+        cur_player = player' g
 
 
 instance Game GameState where
