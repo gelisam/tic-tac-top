@@ -24,7 +24,7 @@ markBoard g = unlines . mark . lines where
 
 inspect_game :: GameState -> IO ()
 inspect_game g = do putStrLn $ (if player g then markBoard g else id) $ printBoard b
-                    case winner b of
+                    case winner g of
                       Nothing    -> return ()
                       Just True  -> do printd "The computer wins."
                                        exitSuccess
@@ -85,7 +85,7 @@ user_to_play g = do when (winner == Just False && moves_left > 1) $ do
     dot_if_invalid c = if valid_choice c then c
                                          else cell_at c
     valid_choice k = k `elem` map fst choices
-    choices = [(full_choice_grid `at` m, m) | m <- legal_moves g]
+    choices = [(full_choice_grid `at` movePos m, m) | m <- legal_moves g]
     cell_at = printCell . fromJust . flip lookup cell_map
     cell_map = [(full_choice_grid `at` m, b `at` m) | m <- positions]
 

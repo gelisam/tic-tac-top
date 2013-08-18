@@ -11,17 +11,20 @@ import Player
 type Winner = Maybe Player
 
 class Game a where
-  player' :: a -> Player
-  winner' :: a -> Winner
+  current_player :: a -> Player
+  winner :: a -> Winner
+  
+  tie :: a -> Bool
+  tie = null . legal_moves
   
   data GameIx a :: *
-  game_range' :: (GameIx a, GameIx a)
-  game_index' :: a -> GameIx a
-  indexed_game' :: GameIx a -> a
+  game_range :: (GameIx a, GameIx a)
+  game_index :: a -> GameIx a
+  indexed_game :: GameIx a -> a
   
   data GameMove a :: *
-  legal_moves' :: a -> [GameMove a]
-  play' :: a -> GameMove a -> a
+  legal_moves :: a -> [GameMove a]
+  play :: a -> GameMove a -> a
 
 type BestMove a = (Maybe (GameMove a), Winner, Int)
 
@@ -30,21 +33,21 @@ type BestMove a = (Maybe (GameMove a), Winner, Int)
 -- True wants to delay the conclusion of the game, while
 -- False wants to precipitate it.
 -- Both want to win.
-best_moves' :: forall a. (Game a, Ix (GameIx a))
+mkBestMoves :: forall a. (Game a, Ix (GameIx a))
             => Array (GameIx a) (BestMove a)
             -> Array (GameIx a) (BestMove a)
-best_moves' memo = array game_range' [(ix, f ix) | ix <- range game_range']
+mkBestMoves memo = array game_range [(ix, f ix) | ix <- range game_range]
   where
-    f = best_move' . indexed_game'
+    f = best_move . indexed_game
     
-    best_move' :: (Game a, Ix (GameIx a))
-               => a
-               -> BestMove a
-    best_move' g = case winner' g of
-                     Nothing -> best_from g
-                     Just p  -> (Nothing, Just p, 0)
+    best_move :: (Game a, Ix (GameIx a))
+              => a
+              -> BestMove a
+    best_move g = case winner g of
+                    Nothing -> best_from g
+                    Just p  -> (Nothing, Just p, 0)
       where
-        best_from = maximumBy (compare `on` value) . (tie:) . map outcome . legal_moves'
+        best_from = maximumBy (compare `on` value) . (tie:) . map outcome . legal_moves
         tie = (Nothing, Nothing, 0)
         outcome m = let (     _, winner, moves_left  ) = response m
                      in (Just m, winner, moves_left+1)
@@ -53,7 +56,7 @@ best_moves' memo = array game_range' [(ix, f ix) | ix <- range game_range']
         value (_, winner, _) | winner == Nothing       = -1000
         value (_, _, moves_left) = if cur_player then moves_left else -moves_left
         -- lookup the response in the _memoized_ version
-        -- (a recursive call to best_moves would be slow)
-        response = (memo !) . game_index' . play' g
+        -- (a recursive call to mkBestMoves would be slow)
+        response = (memo !) . game_index . play g
         opponent = not cur_player
-        cur_player = player' g
+        cur_player = current_player g
