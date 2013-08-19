@@ -7,6 +7,7 @@ import Text.Printf
 import System.Exit
 import System.Environment
 import System.IO
+import Debug.Trace
 
 import Player
 import Board
@@ -25,21 +26,21 @@ import Play
 -- 'tic-tac-top',  '17',  '4'
 -- );
 
-enumerate_responses :: TicTacTop -> [(String, Char)]
-enumerate_responses g = immediate_responses ++ subsequent_responses
+enumerate_responses :: String -> TicTacTop -> [(String, Char)]
+enumerate_responses prefix g = concatMap pathsFrom $ legal_moves g
   where
-    immediate_responses = [([m], immediate_response m) | m <- player_moves]
-    subsequent_responses = [(p ++ p', r') | (p, r) <- immediate_responses
-                                          , r `elem` "123456789"
-                                          , let g' = playLetter r
-                                          , (p', r') <- enumerate_responses g'
-                                          ]
-    playLetter c = play g $ letterMove c
-    player_moves = filter (`elem` "123456789") $ printChoices g
-    immediate_response = letter . best_move . play g . letterMove
-    letter (Just (GameMove pos), _, _) = letterGrid `at` pos
-    letter (Nothing, _, _) = printCell $ winner g
+    pathsFrom :: GameMove TicTacTop -> [(String, Char)]
+    pathsFrom m | isJust response = (prefix', letter') : enumerate_responses prefix' g''
+      where
+        g' = play g m
+        g'' = play g' m'
+        (response, _, _) = best_move g'
+        Just m' = response
+        letter = letterGrid `at` movePos m
+        letter' = letterGrid `at` movePos m'
+        prefix' = prefix ++ [letter]
+    pathsFrom m | otherwise = []
 
 
 main = do let b = indexed_board (fst board_range)
-          mapM_ print $ enumerate_responses $ TicTacTop 0 False b
+          mapM_ print $ enumerate_responses "" $ TicTacTop 0 False b
