@@ -100,7 +100,7 @@ The game isn't installed anywhere, `make` will compile it inside the current fol
     [1 of 2] Compiling Board            ( src/Board.hs, src/Board.o )
     [2 of 2] Compiling Main             ( src/Main.hs, src/Main.o )
     Linking src/Main.exe ...
-    ./src/Main.exe
+    ./src/Main.exe tic-tac-top
     please wait while the computer evaluates your chances.
 
     ...
