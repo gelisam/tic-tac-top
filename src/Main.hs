@@ -22,13 +22,14 @@ instance Playable TicTacTop where
   
   printGame = printBoard . board
   
-  printChoices g = print_marked letterBoard
+  printChoices g = print_marked choiceBoard
     where
       print_marked = markGame g . unlines
-      letterBoard = (map.map) dot_if_illegal letterGrid
+      choiceBoard = (map.map) dot_if_illegal letterGrid
       dot_if_illegal c = if letterMove c `elem` legal_moves g
                            then c
-                           else '.'
+                           else letterBoard `at` letterPos c
+      letterBoard = (map.map) printCell (board g)
   
   validateChoice g [c] | c `elem` "123456789" = if letterMove c `elem` legal_moves g
                                                   then Just (letterMove c)
@@ -38,10 +39,13 @@ instance Playable TicTacTop where
 letterGrid :: [[Char]]
 letterGrid = ["123","456","789"]
 
-letterMove :: Char -> GameMove TicTacTop
-letterMove = GameMove . head . matching_positions
+letterPos :: Char -> Pos
+letterPos = head . matching_positions
   where
     matching_positions c = filter (\p -> letterGrid `at` p == c) positions
+
+letterMove :: Char -> GameMove TicTacTop
+letterMove = GameMove . letterPos
 
 
 main = do let b = indexed_board (fst board_range)
