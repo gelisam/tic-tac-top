@@ -17,14 +17,10 @@ import TicTacTop
 import Play
 
 
--- INSERT INTO  `carlosm5_board`.`AI` (
--- `game` ,
--- `input` ,
--- `response`
--- )
--- VALUES (
--- 'tic-tac-top',  '17',  '4'
--- );
+mysql :: String -> (String, Char) -> String
+mysql game (input, response) = printf cmd (show game) (show input) (show [response])
+  where
+    cmd = "INSERT INTO carlosm5_board.AI (game,input,response) VALUES (%s,%s,%s);"
 
 enumerate_responses :: String -> TicTacTop -> [(String, Char)]
 enumerate_responses prefix g = concatMap pathsFrom $ legal_moves g
@@ -43,4 +39,6 @@ enumerate_responses prefix g = concatMap pathsFrom $ legal_moves g
 
 
 main = do let b = indexed_board (fst board_range)
-          mapM_ print $ enumerate_responses "" $ TicTacTop 0 False b
+          mapM_ putStrLn $ map (mysql "tic-tac-top")
+                         $ enumerate_responses ""
+                         $ TicTacTop 0 False b
