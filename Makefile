@@ -6,6 +6,8 @@ test: src/Main.exe
 
 src/Main.exe: src/Player.hs src/Board.hs src/Game.hs src/AI.hs src/TicTacTop.hs src/TicTacTop2.hs src/TicTacTop3.hs src/Play.hs src/Main.hs
 	ghc --make $^ -o "$@"
+src/MySql.exe: src/Player.hs src/Board.hs src/Game.hs src/AI.hs src/TicTacTop.hs src/TicTacTop2.hs src/Play.hs src/MySql.hs
+	ghc --make $^ -o "$@"
 
 
 clean:
