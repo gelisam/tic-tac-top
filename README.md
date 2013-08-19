@@ -5,7 +5,7 @@ A console-based version of my board games, [Tic-tac-top](http://gelisam.com/boar
 
 Unlike the online versions linked above, the console version has an AI against which you can play. Here is an annotated match.
 
-    > ./src/Main.exe
+    > ./src/Main.exe tic-tac-top
     please wait while the computer evaluates your chances.
 
     ...
