@@ -1,9 +1,9 @@
 Tic-tac-top
 ===
 
-A console-based version of [Tic-tac-top](http://gelisam.com/board/tic-tac-top/).
+A console-based version of my board games, [Tic-tac-top](http://gelisam.com/board/tic-tac-top/) and [Tic-tac-top2](http://gelisam.com/board/tic-tac-top2/).
 
-Unlike the online version linked above, the console version has an AI against which you can play. Here is an annotated match.
+Unlike the online versions linked above, the console version has an AI against which you can play. Here is an annotated match.
 
     > ./src/Main.exe
     please wait while the computer evaluates your chances.
