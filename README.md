@@ -1,7 +1,7 @@
 Tic-tac-top
 ===
 
-A console-based version of my board games, [Tic-tac-top](http://gelisam.com/board/tic-tac-top/) and [Tic-tac-top2](http://gelisam.com/board/tic-tac-top2/).
+A console-based version of my board games, [Tic-tac-top](http://gelisam.com/board/tic-tac-top/) and [Tic-tac-top 2](http://gelisam.com/board/tic-tac-top2/).
 
 Unlike the online versions linked above, the console version has an AI against which you can play. Here is an annotated match.
 
