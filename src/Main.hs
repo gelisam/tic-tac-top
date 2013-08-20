@@ -14,6 +14,7 @@ import Game
 import AI
 import TicTacTop
 import TicTacTop2
+import TicTacTop3
 import Play
 
 
@@ -22,6 +23,7 @@ main = do let b = indexed_board (fst board_range)
           case args of
             ["tic-tac-top"]  -> play_game $ TicTacTop        0 False b
             ["tic-tac-top2"] -> play_game $ TicTacTop2 False 0 False b
+            ["tic-tac-top3"] -> play_game $ TicTacTop3   (0,0) False b
             _                  -> do
               name <- getProgName
               printf "usage: %s <game>\n" name
@@ -31,3 +33,4 @@ main = do let b = indexed_board (fst board_range)
               printf "\n"
               printf "  tic-tac-top\n"
               printf "  tic-tac-top2\n"
+              printf "  tic-tac-top3\n"
