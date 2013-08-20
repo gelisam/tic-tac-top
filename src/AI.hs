@@ -34,10 +34,12 @@ mkBestMoves memo = array game_range [(ix, f ix) | ix <- range game_range]
         tie = (Nothing, Nothing, 0)
         outcome m = let (     _, winner, moves_left  ) = response m
                      in (Just m, winner, moves_left+1)
-        value (Nothing, _, _)                          = -3000
-        value (_, winner, _) | winner == Just opponent = -2000
-        value (_, winner, _) | winner == Nothing       = -1000
-        value (_, _, moves_left) = if cur_player then moves_left else -moves_left
+        value t = win t + delay t
+        win (Nothing, Nothing, _)                    = -3000
+        win (_, winner, _) | winner == Just opponent = -2000
+        win (_, winner, _) | winner == Nothing       = -1000
+        win (_, winner, _) | otherwise               = 0
+        delay (_, _, moves_left) = if cur_player then moves_left else -moves_left
         -- lookup the response in the _memoized_ version
         -- (a recursive call to mkBestMoves would be slow)
         response = (memo !) . game_index . play g
